@@ -1,52 +1,562 @@
-# Prerequisites
-*.d
 
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
+//Matheus Rauan Silva do Nascimento 23484
 
-# Linker output
-*.ilk
-*.map
-*.exp
+#include <stdio.h>
+#include <string.h>
+#define MAX_CARACTER 30
+#include <ctype.h>
+#include <stdlib.h>
+typedef struct EQUIPES{
+    char time[MAX_CARACTER];//nome da equipe
+    char codigo[MAX_CARACTER];
+    //[MAX_CARACTER];//codigo que vai ser gerado auomaticamente com as iniciais do nome
+    int n_registro;//n de registro na federacao
+    int pont_ult;//pontuacao no ultimo campeonato
 
-# Precompiled Headers
-*.gch
-*.pch
+}EQUIPE;
+typedef struct JOGADORES{
+    char nome[MAX_CARACTER];//nome e apelido
+    char equipe_atual[MAX_CARACTER];//aonde esta jogar tem que esta registrado anteriormente
+    int n_inscricao;//n de registro na federacao
+    int nascimento[3];//fazer um vetor simples que 0(dia)/1(mes)/2(ano) grava a data completa
+    char nacionalidade[MAX_CARACTER];
+}JOGADOR;
+typedef struct TREINADORES{
+    char nome[MAX_CARACTER];//nome e apelido
+    char equipe_atual[MAX_CARACTER];//aonde esta jogar tem que esta registrado anteriormente
+    int n_inscricao;//n de registro na federacao
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
+}TREINADOR;
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
+JOGADOR	jogador[MAX_CARACTER];
+EQUIPE equipe[MAX_CARACTER];
+JOGADOR jogador[MAX_CARACTER];
+TREINADOR treinador[MAX_CARACTER];
+int i,j,e,t,E,T,J;
 
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
+void ler_de_arquivos(){
+    FILE *fp;
+    FILE *fp2;
+    FILE *fp3;
+    char nome[MAX_CARACTER],nome2[MAX_CARACTER],nome3[MAX_CARACTER];
+    printf("Informe exatamente o nome do arquivo dos jogadores (nao e necessario .txt):\n");
+    do{
+        scanf("%s", nome);
+        fp=fopen(strcat(nome,".txt"),"r");
+        if(fp==NULL){
+        printf("Arquivo nao encontrado. Digite novamente\n");
+        }
+    }while(fp==NULL);
+    fscanf(fp, "%i %i %i",&E,&J,&T);// obtendo as quantidades das equipes lidas para os ciclos
 
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
+    for(i=0;i<J;i++){
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+        fgets(jogador[i].nome, MAX_CARACTER,fp);
+        fgets(jogador[i].nacionalidade, MAX_CARACTER,fp);
+        fgets(jogador[i].equipe_atual,MAX_CARACTER,fp);
+        fscanf(fp, "%i/%i/%i",&jogador[i].nascimento[0],&jogador[i].nascimento[1],&jogador[i].nascimento[2]);
+        fscanf(fp, "%i",&jogador[i].n_inscricao);
+        jogador[i].nome[strlen(jogador[i].nome)-1]='\0';
+        jogador[i].equipe_atual[strlen(jogador[i].equipe_atual)-1]='\0';
+        jogador[i].nacionalidade[strlen(jogador[i].nacionalidade)-1]='\0';
+
+    }
+
+    fclose(fp);
+
+    do{
+        printf("Informe exatamente o nome do arquivo dos treinadores (nao e necessario .txt):\n");// verficar se existe o aqrivo
+        scanf("%s", nome2);
+        fp2=fopen(strcat(nome2,".txt"),"r");
+        if(fp2==NULL){
+            printf("Arquivo nao encontrado.Digite novamente\n"); 
+        }
+    }while(fp2==NULL);
+
+    for(t=0;t<T;t++){
+
+        fgets(treinador[t].nome, MAX_CARACTER,fp2);
+        fgets(treinador[t].equipe_atual, MAX_CARACTER,fp2);
+        fscanf(fp2, "%i",&treinador[t].n_inscricao);
+        treinador[t].nome[strlen(treinador[t].nome)-1]='\0';
+        treinador[t].equipe_atual[strlen(treinador[t].equipe_atual)-1]='\0';
+
+
+    }
+
+    fclose(fp2);
+    do{
+    printf("Informe exatamente o nome do arquivo das equipas (nao e necessario .txt):\n");
+    scanf("%s", nome3);
+    fp3=fopen(strcat(nome3,".txt"),"r");
+    if(fp3==NULL){
+        printf("Arquivo nao encontrado.Digite novamente\n");
+       
+    }
+    }while(fp3==NULL);
+
+    for(e=0;e<E;e++){
+        fgets(equipe[e].time,MAX_CARACTER,fp3);
+        fgets(equipe[e].codigo,MAX_CARACTER,fp3);
+        fscanf(fp3,"%i\n",&equipe[e].n_registro);
+        fscanf(fp3,"%i",&equipe[e].pont_ult);
+        equipe[e].time[strlen(equipe[e].time)-1]='\0';
+        equipe[e].codigo[strlen(equipe[e].codigo)-1]='\0';
+
+
+    }
+
+    fclose(fp3);
+    getchar();
+
+
+}
+
+
+
+void escrever_arquivos(){
+
+    FILE* fp;
+    FILE *fp2;
+    FILE *fp3;
+
+    char fileName[80],nome0[80],nome1[80];
+
+    printf("Perfeito, vamos salvar seu arquivo digite o nome que desejas salvar ou atualizar  o arquivo dos jogadores:\n ");
+    printf("QTD COLETADAS: %i jogadores, %i equipas, %i treinadores.\n",J,E,T);
+    scanf("%s", fileName);
+    fp = fopen(strcat(fileName, ".txt"),"w");
+    if(fp==NULL){
+        printf("Error opening the file.");
+        exit(1);
+    }
+    fprintf(fp, "%i %i %i ",E,J,T);
+
+    for(j=0; j<J; j++){//salvando os jogadores
+        fprintf(fp, "%.25s\n", jogador[j].nome);
+        fprintf(fp, "%.25s\n",jogador[j].nacionalidade);
+        fprintf(fp, "%.25s\n",jogador[j].equipe_atual);
+        fprintf(fp, "%i/%i/%i",jogador[j].nascimento[0],jogador[j].nascimento[1],jogador[j].nascimento[2]);
+        fprintf(fp, " %i ",jogador[j].n_inscricao);
+    }
+
+    fclose(fp);
+
+    printf("Digite o nome que desejas salvar ou atualizar o arquivo dos treinadores:\n ");
+    scanf("%s",nome0);
+    fp2 = fopen(strcat(nome0, ".txt"),"w");
+    if(fp2==NULL){
+        printf("Error opening the file.");
+        exit(1);
+    }
+
+    for(t=0;t<T;t++){
+        fprintf(fp2, "%.25s\n",treinador[t].nome);
+        fprintf(fp2, "%.25s\n",treinador[t].equipe_atual);
+        fprintf(fp2, "%i",treinador[t].n_inscricao);
+    }
+
+    fclose(fp2);
+
+    printf("Digite o nome que desejas salvar ou atualizar  o arquivo dos equipes:\n ");
+    scanf("%s",nome1);
+    fp3 = fopen(strcat(nome1, ".txt"),"w");
+    if(fp3==NULL){
+        printf("Error opening the file.");
+        exit(1);
+    }
+
+    for(e=0;e<E;e++){
+        fprintf(fp3, "%.25s\n",equipe[e].time);
+        fprintf(fp3, "%.5s\n",equipe[e].codigo);
+        fprintf(fp3, "%i\n",equipe[e].n_registro);
+        fprintf(fp3, "%i",equipe[e].pont_ult);
+    }
+    fclose(fp3);
+
+}
+void abrir_menu(){
+    char a,b[MAX_CARACTER],c,d[MAX_CARACTER],nacionalidade[MAX_CARACTER];
+
+    do{
+        
+        printf("-----------------------\n");
+        printf("|********MENU*********|\n");
+        printf("-----------------------\n");
+        printf("\n T-Buscar por time\n S-Listar tudo\n C-Listar treinadores\n L-Listar dados completos de uma equipe\n D-Deletar elemento\n A- Atualizar ficheiros\n");
+        printf(" K-Listar equipes\n N-Filtrar Jogadores por Nacionalidade\n J-Listar e selecionar Jogadores\n '.' se quiser fechar o programa ou adicionar dados\n");
+        printf("Indique a letra:\n");
+        scanf("%c",&a);
+        getchar();
+        switch (a) {
+            case 'a':;
+            case 'A':{
+                escrever_arquivos();
+                break;
+            }
+            case 'j':;
+            case 'J':{
+                printf("listando todos os jogadores\n");
+                for(j=0;j<J;j++)
+                    printf("%s\n",jogador[j].nome);
+
+                printf("Digite o nome de um jogador para obter as informacoes completas dele:\n");
+                //getchar();
+                gets(d);
+                for(j=0;j<J;j++){
+                    if(strcmp(d,jogador[j].nome)==0){
+                        printf("Nome Jogador: %s\n Nacionalidade: %s\n Registro:%i\n",jogador[j].nome,jogador[j].nacionalidade,jogador[j].n_inscricao);
+                        printf("Data de nascimento: %i/%i/%i\n",jogador[j].nascimento[0],jogador[j].nascimento[1],jogador[j].nascimento[2]);
+                
+                    }
+                    else
+                        printf("nao encontrado\n");
+                }
+
+                break;
+            }
+            case 'l':;
+            case 'L':{
+                for(e=0;e<E;e++){
+                    printf("Equipa: %s\n Numero: %i\n Ultima pontuacao:%i\n codigo:%s\n",equipe[e].time,equipe[e].n_registro,equipe[e].pont_ult,equipe[e].codigo);
+                    for(j=0;j<J;j++){
+                        if(strcmp(jogador[j].equipe_atual,equipe[e].time)==0)
+                            printf("Nome Jogador: %s\n Nacionalidade: %s\n Registro:%i\n",jogador[j].nome,jogador[j].nacionalidade,jogador[j].n_inscricao);
+                        // printf("Data de nascimento: %i/%i/%i\n",jogador[j].nascimento[0],jogador[j].nascimento[1],jogador[j].nascimento[2]);
+                    }
+                    for(t=0;t<T;t++){
+                        if(strcmp(treinador[t].equipe_atual,equipe[e].time)==0)
+                            printf("treinador principal:%s\n Registro:%i\n",treinador[t].nome,treinador[t].n_inscricao);
+                }
+                printf("-----proxima equipa------\n");
+                }
+
+
+                break;
+            }
+            case 'n':;
+            case 'N':{
+                printf("De qual nacionalidade quer listar os jogadores?\n");
+                //getchar();
+                gets(nacionalidade);
+                for(j=0;j<J;j++){
+                    if(strcmp(nacionalidade,jogador[j].nacionalidade)==0){
+                        printf("\n Nome: %s\n codigo: %i\n",jogador[j].nome,jogador[j].n_inscricao);
+                    }
+                }
+                break;
+            }
+            case 'k':;
+            case 'K':{
+                for(e=0;e<E;e++){
+                    printf(" Nome da equipe: %s\n N resgistro: %i\n Codigo da equipe: %s\n Ultima pontuacao:%i\n",equipe[e].time,equipe[e].n_registro,equipe[e].codigo,equipe[e].pont_ult);
+                }
+                break;
+            }
+            case 'c':;
+            case 'C':{
+                for(t=0;t<T;t++){
+                    printf(" Nome treinador: %s\n N registro: %i\n Equipe atual:%s\n",treinador[t].nome,treinador[t].n_inscricao,treinador[t].equipe_atual);
+                }
+                break;
+            }
+            case 'T':;
+            case 't': {
+                //getchar();
+                printf("Informe o nome do time que deseja listar os jogadores que nele jogam:\n");
+                gets(b);
+                for (j = 0; j < J; j++) {
+
+                    if (strcmp(jogador[j].equipe_atual, b) == 0)
+                        printf("Jogador: %s\n", jogador[j].nome);
+                }
+                break;
+            }
+            case 'd':;
+            case 'D': {
+                printf("Qual elemento voce deseja deletar?(selecione uma E: equipe, T: treinador ou J: jogador )\n");
+                //getchar();
+                scanf("%c",&c);
+                getchar();
+                if (c == 'e' || c == 'E') {
+                    printf("Qual equipe voce deseja apagar as informacoes do banco de dados?\n");
+                    //getchar();
+                    gets(d);
+                    for (e = 0; e < E; e++) {
+                        if (strcmp(d, equipe[e].time) == 0) {
+                            strcpy(equipe[e].time, "");
+                            strcpy(equipe[e].codigo, "");
+                            equipe[e].pont_ult=0;
+                            equipe[e].n_registro=0;
+                            printf("deletado com sucesso, importante lembrar que precisas atualizar os arquivos apos as modificacoes aqui feitas\n");
+                        }
+                        else
+                            printf("equipe nao econtrada, tente novamente.\n");
+                    }
+                }
+                if(c=='j'||c=='J'){
+                    //getchar();
+                    printf("Qual jogador deseja apagar?\n");
+                    gets(d);
+                    for(j=0;j<J;j++){
+                        if(strcmp(d,jogador[j].nome)==0){
+                            strcpy(jogador[j].nome, "");
+                            jogador[j].n_inscricao=0;
+                            jogador[j].nascimento[0]=0;
+                            jogador[j].nascimento[1]=0;
+                            jogador[j].nascimento[2]=0;
+                            strcpy(jogador[j].nacionalidade, "");
+                            printf("deletado com sucesso, importante lembrar que precisas atualizar os arquivos apos as modificacoes aqui feitas\n");
+                        }
+                    }
+                }
+                if(c=='t'||c=='T'){
+                    //getchar();
+                    printf("Qual treinador deseja deletar?\n");
+                    gets(d);
+                    for(t=0;t<T;t++){
+                        if(strcmp(d,treinador[t].nome)==0){
+                            strcpy(treinador[t].nome, "");
+                            treinador[t].n_inscricao=0;
+                            strcpy(treinador[t].equipe_atual, "");
+                            printf("deletado com sucesso, importante lembrar que precisas atualizar os arquivos apos as modificacoes aqui feitas\n");
+                        }
+                    }
+                }
+                break;
+            }
+            case 's':;
+            case 'S': {
+
+                printf("Listando todas as informacoes do banco de dados:\n");
+                for(j=0; j<J; j++){//
+                    printf("\nNOME DO JOGADOR:%s\n DATA DE NASCIMENTO:%i/%i/%i\n N DE INSCRICAO:%i\n CLUBE ATUAL:%s\n NACIONALIDADE: %s\n", jogador[j].nome, jogador[j].nascimento[0],jogador[j].nascimento[1],jogador[j].nascimento[2],jogador[j].n_inscricao,jogador[j].equipe_atual, jogador[j].nacionalidade);
+                }
+                for(e=0; e<E; e++){//
+                    printf("\nNOME DA EQUIPA:%s\n CODIGO:%s\n N REGISTRO:%i\n ULTIMA PONTUACAO:%i\n", equipe[e].time, equipe[e].codigo, equipe[e].n_registro, equipe[e].pont_ult);
+                }
+                for(t=0; t<T; t++){//
+                    printf("\nNOME TREINADOR:%s\n N REGISTRO:%i\n EQUIPA ATUAL: %.25s\n", treinador[t].nome, treinador[t].n_inscricao, treinador[t].equipe_atual);
+                }
+                
+                break;
+            }
+            case '\n':;
+            case '\t':;
+            case ' ':;
+            case '.':{
+                //getchar();
+                printf("...");
+                break;
+            }
+            default: {
+                printf("Resposta Invalida.\n");
+                break;
+            }
+        }
+    } while (a != '.');
+
+
+}
+
+
+int main(){
+    int i=0,e=0,t=0,j=0,c=1,C,k=0;//cada um vai ter seu proprio contador para nao misturar as informacoes dentro do ciclo
+    char resposta[MAX_CARACTER];
+    char ult_resposta;
+    char resposta8;
+
+    do{
+        printf("|BEM VINDO AO DEMO|\n|Voce deseja abrir um banco de dados pre-criado?\n( Resposta: Sim ou Nao ou qualquer outra caso queira acessar o menu)|\n");
+        gets(resposta);
+        if (strcmp(resposta, "sim")==0 || strcmp(resposta, "Sim")==0 || strcmp(resposta, "SIM")==0) {
+            ler_de_arquivos();
+            abrir_menu();
+            
+        }
+
+
+        else if (strcmp(resposta, "nao") == 0 || strcmp(resposta, "Nao") == 0 || strcmp(resposta, "NAO") == 0) {
+
+
+            printf("Criando o seu banco de dados... Voce sempre deve comecar adicionando os dados das equipas\n");
+            do {//ciclo para criar uma nova selecao e coletar todos os dados
+                printf("|Vamos preencher a sua selecao de futebol|.\n Para adicionar uma nova:\n Equipa digite 'e'\n Novo jogador 'j'\n Treinador 't'\n Entrar no menu 'm'\nDesejas sair? escreva um '.' \n");
+                scanf("%s", &resposta8);
+                getchar();
+                switch (resposta8) {
+                    case 'j': {
+                        if(E>0){
+                            printf("Voce esta prestes a adicionar um novo jogador ao banco de dados.\n Informe o nome e o apelido:\n");
+                            gets(jogador[j].nome);
+                            printf("Informe a nacionalidade:\n");
+                            gets(jogador[j].nacionalidade);
+                            printf("Informe o clube em que joga(previamente adicionado):\n");
+                            gets(jogador[j].equipe_atual);
+                            k=0;
+                            for(i=0;i<E;i++){
+                                if(strcmp(equipe[i].time,jogador[j].equipe_atual)==0){
+                                    printf("Localizamos a equipa e relacionamos o jogador.\n");
+                                    k++;
+                                }
+                            }
+                            do{
+                            if(k==0){
+                                printf("Infelizmente nao localizamos a equipe que voce deseja adicionar o jogador, tente novamente:\n");
+                                gets(jogador[j].equipe_atual);  
+                                for(i=0;i<E;i++){
+                                if(strcmp(equipe[i].time,jogador[j].equipe_atual)==0)
+                                    k++; 
+                                }
+                            }     
+                            }while(k==0);                       
+                            printf("Numero de registro:\n");
+                            scanf("%i", &jogador[j].n_inscricao);
+                            getchar();
+                            printf("Agora informe a sua data de nascimento(DD/MM/AA):\n");
+                            scanf("%d/%d/%d", &jogador[j].nascimento[0], &jogador[j].nascimento[1], &jogador[j].nascimento[2]);//dia mes e ano 0 1 2 respectivamente ocupadno o vetor
+                            getchar();
+
+                            j++;
+                            J++;
+                        }
+                        else
+                            printf("Nao podemos adicionar um jogador sem haver equipes no banco de dados adicione primeiro uma equipe:\n");
+                        break;
+                    };
+                    case 'e': {
+                        printf("Voce esta prestes a adicionar uma nova equipa ao banco de dados.\n Informe o nome do clube:\n");
+                        gets(equipe[e].time); 
+                        for(i=0;i<E;i++){
+                            if(strcmp(equipe[i].time,equipe[e].time)==0){
+                                do{
+                                    printf("parece que ja existe uma equipe com esse nome, crie outro nome de equipe:\n");
+                                    gets(equipe[e].time);  
+                                }while(strcmp(equipe[i].time,equipe[e].time)==0);
+                                
+                           
+                            }
+                        }
+                        
+                        printf("gerou-se o codigo da equipe:\n");
+                        equipe[e].codigo[0] = toupper(equipe[e].time[0]);
+                        for (i =0; i < strlen(equipe[e].time); i++) {
+                            if (equipe[e].time[i] == ' ') {
+                                equipe[e].codigo[c] = toupper(equipe[e].time[i+1]);
+                                c++;
+                            }
+                            
+                        }
+                        c=1;
+                        puts(equipe[e].codigo);
+                        printf("Informe o numero de registro e ultima pontuacao obtida no ultimo campeonato:\n");
+                        scanf("%i %i", &equipe[e].n_registro, &equipe[e].pont_ult);// pedindo inteiros ao utilizador
+                        getchar();
+                        e++;
+                        E++;
+                    
+                        break;
+                    }
+
+                    case 't': {
+                        printf("Voce esta prestes a adicionar um novo treinador ao banco de dados.\n Informe o nome:\n");
+                        gets(treinador[t].nome);
+                        
+                        printf("Informe a equipe em que esta a treinar atualmente:\n");
+                        gets(treinador[t].equipe_atual);
+                        k=0;
+                        for(i=0;i<E;i++){// verificacao se existe a equipe caso tenha erro de digitacao
+                            if(strcmp(equipe[i].time,treinador[t].equipe_atual)==0)                              
+                                k++;                               
+                         }
+                        if(k==0){
+                            do{
+                                printf("Infelizmente nao localizamos a equipe que voce deseja adicionar o treinador, tente novamente:\n");
+                                gets(treinador[t].equipe_atual);  
+                            
+                                for(i=0;i<E;i++){
+                                    if(strcmp(equipe[i].time,treinador[t].equipe_atual)==0)
+                                        k++; 
+                                }
+                            }while(k==0);
+                        } 
+                        for(i=0;i<T;i++){
+                            C=0;
+                            if(strcmp(treinador[i].equipe_atual,treinador[t].equipe_atual)==0){
+                                C++;
+                                do{
+                                    
+                                    printf("A equipe selecionada ja possui um treinador principal, escolha outra equipe para esse treinador:\n");
+                                    gets(treinador[t].equipe_atual);
+                                    k=0;
+                                    for(i=0;i<E;i++){// verificacao se existe a equipe caso tenha erro de digitacao
+                                        if(strcmp(equipe[i].time,treinador[t].equipe_atual)==0)                              
+                                            k++;                               
+                                    }
+                                    if(k==0){
+                                        do{
+                                            printf("Infelizmente nao localizamos a equipe que voce deseja adicionar o treinador, tente novamente:\n");
+                                            gets(treinador[t].equipe_atual);  
+                            
+                                            for(i=0;i<E;i++){
+                                                if(strcmp(equipe[i].time,treinador[t].equipe_atual)==0)
+                                                    k++; 
+                                            }
+                                        }while(k==0);
+                                    } 
+
+                                }while(C==0);
+                               
+                            }
+                            else
+                                printf("Treinador associado a equipa com sucesso.\n");
+
+                             
+                        }
+                        printf("Informe seu numero de inscricao:\n");
+                        scanf("%i", &treinador[t].n_inscricao);
+                        getchar();
+                        t++;
+                        T++;
+                        break;
+                    }
+                    case '.': {
+                        printf("Saindo....\n");
+                        break;
+                    }
+                    case 'm':{
+                        abrir_menu();
+                        break;
+                    }
+
+                    default: {
+                        printf("Sinto muito mais nao temos esta opcao, tente novamente.\n");
+                        break;
+                    }
+
+                }
+            } while (resposta8 != '.');
+
+            printf("QTD COLETADAS: %i jogadores, %i equipas, %i treinadores\n",J,E,T);
+            if(i!=0||j!=0||e!=0||t!=0){
+                printf("Voce deseja escrever um banco de dados com os dados fornecidos? (Resposta: Sim ou Nao)\n");
+                gets(resposta);
+            }
+            if (strcmp(resposta, "sim")==0 || strcmp(resposta, "Sim")==0 || strcmp(resposta, "SIM")==0){
+                escrever_arquivos();;//so vai iniciar o void acima caso o utilizador queira ler
+            }
+        }
+            // }
+
+        else{
+            printf("MENU SECUNDARIO\n  digite 's' para fechar o programa, 'm' para ir ao menu ou enter para adicionar banco de dados.\n");
+            scanf("%c",&ult_resposta);
+            if(ult_resposta=='m')
+                abrir_menu();
+        }
+
+    }while(ult_resposta !='s');
+
+    return 0;
+}
+
